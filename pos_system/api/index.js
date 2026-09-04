@@ -1,8 +1,6 @@
 // Vercel serverless entry point.
-// This wraps the same Express app used locally (backend/app.js) with
-// serverless-http, so all existing routes/controllers/middleware work
-// unchanged. Local dev still uses backend/server.js + app.listen().
-const serverless = require('serverless-http');
+// Vercel's Node.js runtime can invoke an Express app directly —
+// no need to wrap it in serverless-http (that's for AWS Lambda).
 const app = require('../backend/app');
 
-module.exports = serverless(app);
+module.exports = app;
