@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System - Login</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .login-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-header h1 {
+      color: #2563eb;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-header p {
+      color: #64748b;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .login-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.875rem;
+      font-size: 1rem;
+    }
+
+    .alert {
+      margin-bottom: 1rem;
+    }
+
+    .text-center {
+      text-align: center;
+      margin-top: 1rem;
+      color: #64748b;
+    }
+
+    .demo-credentials {
+      background: #f1f5f9;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+    }
+
+    .demo-credentials p {
+      margin: 0.25rem 0;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <h1>🏪 POS System</h1>
+      <p>Point of Sale Management</p>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary login-btn">
+        Sign In
+      </button>
+    </form>
+
+    <div class="demo-credentials">
+      <p><strong>Demo Credentials:</strong></p>
+      <p>Username: <code>admin</code></p>
+      <p>Password: <code>admin123</code></p>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Check if already logged in
+    if (isLoggedIn()) {
+      window.location.href = '../pages/dashboard.html';
+    }
+
+    const loginForm = document.getElementById('loginForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const loginBtn = loginForm.querySelector('button');
+
+      try {
+        showLoading(loginBtn);
+
+        const response = await api.login(username, password);
+
+        if (!response) {
+          throw new Error('Invalid username or password');
+        }
+
+        // Save token
+        api.setToken(response.token);
+
+        // Save user information
+        localStorage.setItem('user', JSON.stringify(response.user));
+
+        showAlert('Login successful!', 'success');
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '../pages/dashboard.html';
+        }, 1000);
+      } catch (error) {
+        showAlert(error.message, 'error');
+      } finally {
+        hideLoading(loginBtn);
+      }
+    });
+  </script>
+</body>
+</html>

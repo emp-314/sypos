@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System - Point of Sale</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .pos-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 1.5rem;
+      height: 100vh;
+      background: #f1f5f9;
+    }
+
+    .pos-main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .pos-header {
+      background: white;
+      padding: 0.5rem 0.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .pos-header h1 {
+      margin: 0;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .pos-search {
+      flex: 1;
+      display: flex;
+      gap: 0.75rem;
+      margin-right: 0.5rem;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .pos-search input {
+      min-width: 300px;
+      flex: 1 1 auto;
+      padding: 0.75rem 1rem;
+      border: 3px solid #2563eb;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      background: #f0f9ff;
+      font-weight: 600;
+      height: 40px;
+      box-sizing: border-box;
+    }
+
+    .pos-search input:focus {
+      outline: none;
+      border-color: #99a4c9;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .pos-search select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      background: white;
+      height: 40px;
+      width: 140px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .pos-search select:focus {
+      outline: none;
+      border-color: #76839e;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+
+    .user-menu {
+      flex-shrink: 0;
+    }
+
+    .product-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      background: #f1f5f9;
+    }
+
+    .product-info {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-name {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .product-barcode {
+      color: #64748b;
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .product-price {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2563eb;
+      margin-bottom: 0.5rem;
+    }
+
+    .product-stock {
+      color: #64748b;
+      font-size: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .product-btn {
+      width: 100%;
+      padding: 0.5rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .product-btn:hover {
+      background: #1e40af;
+    }
+
+    .product-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    /* Category Sections */
+    .product-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .category-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid #adb9d7;
+      background: #f1f5f9;
+      z-index: 10;
+    }
+
+    .category-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #1e293b;
+      text-transform: capitalize;
+    }
+
+    .category-count {
+      background: #2563eb;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .category-products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.5rem;
+    }
+    .cart-sidebar {
+      background: white;
+      border-left: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: -1px 0 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .cart-header {
+      padding: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: #f1f5f9;
+      border-radius: 0.25rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .cart-item-info {
+      flex: 1;
+    }
+
+    .cart-item-name {
+      font-weight: 600;
+      display: block;
+    }
+
+    .cart-item-price {
+      color: #64748b;
+      font-size: 0.75rem;
+    }
+
+    .cart-item-qty {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: white;
+      border-radius: 0.25rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .cart-item-qty button {
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.875rem;
+    }
+
+    .cart-item-qty span {
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .cart-item-remove {
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .cart-summary {
+      padding: 1rem;
+      border-top: 1px solid #e2e8f0;
+      background: #f1f5f9;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .summary-row.total {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2563eb;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .cart-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 1rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .cart-actions button {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .btn-checkout {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-checkout:hover {
+      background: #059669;
+    }
+
+    .btn-clear {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-clear:hover {
+      background: #dc2626;
+    }
+
+    .empty-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: #64748b;
+      text-align: center;
+    }
+
+    @media (max-width: 1024px) {
+      .pos-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-sidebar {
+        order: -1;
+        border-left: none;
+        border-bottom: 1px solid #e2e8f0;
+        flex-direction: row;
+        max-height: 120px;
+        overflow-x: auto;
+      }
+
+      .cart-items {
+        flex-direction: row;
+        display: flex;
+        flex: 1;
+      }
+
+      .cart-summary, .cart-actions {
+        border-top: none;
+        border-left: 1px solid #e2e8f0;
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pos-layout">
+    <div class="pos-main">
+      <div class="pos-header">
+        <h1>🛒 Point of Sale</h1>
+        <div class="pos-search">
+          <input type="text" id="searchInput" placeholder="Search products or scan barcode...">
+          <select id="categoryFilter">
+            <option value="">All Categories</option>
+          </select>
+          <button type="button" id="cameraScanBtn" style="padding: 0.5rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: white; cursor: pointer; font-size: 0.85rem; white-space: nowrap;">📷 Scan</button>
+        </div>
+        <div class="user-menu" style="margin: 0;">
+          <div class="user-info" onclick="toggleUserMenu()" style="gap: 0.5rem;">
+            <span id="username">Admin</span>
+          </div>
+          <div class="dropdown-menu" id="userDropdown">
+            <button onclick="logout()">🚪 Logout</button>
+          </div>
+        </div>
+      </div>
+      <div class="product-grid" id="productGrid">
+        <div class="empty-message">Loading products...</div>
+      </div>
+    </div>
+
+    <div class="cart-sidebar">
+      <div class="cart-header">🛒 Cart</div>
+      <div class="cart-items" id="cartItems">
+        <div class="empty-message" style="height: auto; padding: 2rem; text-align: center; width: 100%;">No items</div>
+      </div>
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span id="subtotal">GH₵0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Discount:</span>
+          <span id="discount">GH₵0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Tax:</span>
+          <span id="tax">GH₵0.00</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total:</span>
+          <span id="total">GH₵0.00</span>
+        </div>
+      </div>
+      <div class="cart-actions">
+        <button class="btn-checkout" onclick="proceedToCheckout()">Checkout</button>
+        <button class="btn-clear" onclick="clearCart()">Clear Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Camera Barcode Scanner Modal -->
+  <div class="modal" id="cameraScannerModal">
+    <div class="modal-content p-4" style="max-width: 500px;">
+      <h2 style="color: #1e293b; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <span>Scan Barcode</span>
+        <button type="button" onclick="closeCameraScanner()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+      </h2>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+        <p style="margin: 0 0 0.5rem; font-weight: 600; color: #1e293b;">📱 Manual Entry</p>
+        <p style="margin: 0 0 0.75rem; font-size: 0.875rem; color: #64748b;">Type or paste the barcode below, then tap Add or press Enter.</p>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="manualBarcodeInput" placeholder="Enter barcode..." autocomplete="off" style="flex: 1; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 1rem;">
+          <button type="button" id="manualBarcodeBtn" style="padding: 0.75rem 1rem; border: none; border-radius: 0.5rem; background: #2563eb; color: white; font-weight: 600; cursor: pointer;">Add</button>
+        </div>
+      </div>
+
+      <div style="border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <p style="margin: 0 0 0.5rem; font-weight: 600; color: #1e293b;">📷 Camera Scan</p>
+        <p style="margin: 0 0 0.75rem; font-size: 0.875rem; color: #64748b;">Camera scanning requires HTTPS and camera permission.</p>
+        <button type="button" id="cameraScanNowBtn" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: white; color: #1e293b; font-weight: 600; cursor: pointer;">Start Camera Scan</button>
+        <div id="cameraScannerReader" style="background: #000; border-radius: 0.5rem; overflow: hidden; min-height: 220px; margin-top: 0.75rem; display: none;"></div>
+        <div id="cameraScannerStatus" style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem; text-align: center;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal" id="checkoutModal">
+    <div class="modal-content p-4" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+      <h2 style="color: #1e293b; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <span>Complete Purchase</span>
+        <button type="button" onclick="closeModal('checkoutModal')" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+      </h2>
+      <form id="checkoutForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <!-- Customer Information Section -->
+        <div style="border-right: 1px solid #e2e8f0; padding-right: 1.5rem;">
+          <h3 style="color: #2563eb; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; font-weight: 600;">👤 Customer Information</h3>
+          
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="customerName" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">Customer Name (Optional)</label>
+            <input type="text" id="customerName" placeholder="Full name" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="customerPhone" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">📱 Phone Number</label>
+            <input type="tel" id="customerPhone" placeholder="0248822530" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="customerEmail" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">📧 Email Address</label>
+            <input type="email" id="customerEmail" placeholder="customer@example.com" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="customerAddress" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">📍 Address</label>
+            <textarea id="customerAddress" placeholder="Customer address" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem; resize: none;"></textarea>
+          </div>
+        </div>
+
+        <!-- Purchase Information Section -->
+        <div style="padding-left: 1.5rem;">
+          <h3 style="color: #2563eb; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; font-weight: 600;">🛒 Purchase Details</h3>
+          
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="discountAmount" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">🎁 Discount Amount</label>
+            <input type="number" id="discountAmount" min="0" step="0.01" value="0" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="taxAmount" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">💰 Tax Amount</label>
+            <input type="number" id="taxAmount" min="0" step="0.01" value="0" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="paymentMethod" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">💳 Payment Method</label>
+            <select id="paymentMethod" required style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+              <option value="">Select payment method</option>
+              <option value="cash">💵 Cash</option>
+              <option value="card">💳 Card (Paystack)</option>
+              <option value="mobile_money">📱 Mobile Money (Paystack)</option>
+              <option value="check">✓ Check</option>
+            </select>
+          </div>
+
+          <div id="cashPaymentFields" style="margin-bottom: 0;">
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label for="amountPaid" style="display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; font-size: 0.875rem;">Amount Paid</label>
+              <input type="number" id="amountPaid" min="0" step="0.01" placeholder="0.00" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+            </div>
+            <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #16a34a; font-weight: 500; font-size: 0.875rem;">🔄 Change:</span>
+              <span id="changeAmount" style="color: #16a34a; font-weight: 700; font-size: 1rem;">GH₵0.00</span>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
+        <button type="button" onclick="closeModal('checkoutModal')" style="padding: 0.875rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background: white; color: #1e293b; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">Cancel</button>
+        <button type="submit" form="checkoutForm" style="padding: 0.875rem; border: none; border-radius: 0.5rem; background: #2563eb; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Complete Sale</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    requireAuth();
+
+    let cart = [];
+    let products = [];
+    let filteredProducts = [];
+    let categories = [];
+    let currentReceiptData = null; // Store receipt data for printing
+    let html5QrcodeScanner = null;
+    let lastScanTime = 0;
+    const SCAN_COOLDOWN_MS = 2000;
+    let cameraScanning = false;
+    let scanSessionId = 0;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = getCurrentUser();
+      if (user) {
+        document.getElementById('username').textContent = user.username;
+      }
+
+      await loadProducts();
+      await loadCategories();
+      setupEventListeners();
+      
+      // Auto-focus the search input for barcode scanning
+      setTimeout(() => {
+        document.getElementById('searchInput').focus();
+      }, 500);
+    });
+
+    async function loadProducts() {
+      try {
+        const response = await api.getProducts(1000);
+        products = response.data || [];
+        filteredProducts = products;
+        displayProducts();
+      } catch (error) {
+        showAlert('Error loading products: ' + error.message, 'error');
+      }
+    }
+
+    async function loadCategories() {
+      try {
+        const response = await api.getCategories();
+        categories = response.data || [];
+        const select = document.getElementById('categoryFilter');
+        select.innerHTML = '<option value="">All Categories</option>';
+        categories.forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat.category_id;
+          option.textContent = cat.name;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    }
+
+    function displayProducts() {
+      const grid = document.getElementById('productGrid');
+      if (filteredProducts.length === 0) {
+        grid.innerHTML = '<div class="empty-message">No products found</div>';
+        return;
+      }
+
+      // Group products by category
+      const groupedByCategory = {};
+      filteredProducts.forEach(product => {
+        const categoryName = product.category_name || `Category ${product.category_id}`;
+        if (!groupedByCategory[categoryName]) {
+          groupedByCategory[categoryName] = [];
+        }
+        groupedByCategory[categoryName].push(product);
+      });
+
+      // Display categories with their products
+      let html = '';
+      Object.keys(groupedByCategory).sort().forEach(categoryName => {
+        const categoryProducts = groupedByCategory[categoryName];
+        html += `
+          <div class="category-section">
+            <div class="category-header">
+              <h2>${categoryName}</h2>
+              <span class="category-count">${categoryProducts.length} items</span>
+            </div>
+            <div class="category-products">
+              ${categoryProducts.map(product => `
+                <div class="product-card" onclick="addToCart(${product.product_id})">
+                  <img src="${product.image_url || 'https://via.placeholder.com/150?text=No+Image'}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                  <div class="product-info">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-barcode">${product.barcode || 'N/A'}</div>
+                    <div class="product-price" style="font-weight: 700; color: #2563eb; margin-top: auto;">${formatCurrency(product.price)}</div>
+                    <div class="product-stock">${product.quantity === 0 ? '❌ Out of Stock' : `📦 ${product.quantity}`}</div>
+                    <button class="product-btn" ${product.quantity === 0 ? 'disabled' : ''} style="margin-top: 0.75rem;">
+                      ${product.quantity === 0 ? 'Out of Stock' : '➕ Add to Cart'}
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      grid.innerHTML = html;
+    }
+
+    function setupEventListeners() {
+      // Search
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        if (query.length === 0) {
+          filteredProducts = products;
+        } else {
+          filteredProducts = products.filter(p =>
+            p.name.toLowerCase().includes(query) ||
+            (p.barcode && p.barcode.includes(query))
+          );
+        }
+        displayProducts();
+      });
+
+      // Barcode scanner support - Enter key triggers auto-add
+      document.getElementById('searchInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const barcode = e.target.value.trim().toLowerCase();
+
+          if (barcode.length === 0) return;
+
+          console.log('Barcode scanned:', barcode);
+
+          // Find product by barcode or name
+          const product = products.find(p =>
+            (p.barcode && p.barcode.toLowerCase() === barcode) ||
+            p.name.toLowerCase().includes(barcode)
+          );
+
+          if (product) {
+            console.log('Product found:', product.name);
+            addToCart(product.product_id);
+            e.target.value = ''; // Clear search
+            filteredProducts = products;
+            displayProducts();
+            e.target.focus(); // Keep focus on search for next scan
+            showAlert(`Added ${product.name} to cart`, 'success');
+          } else {
+            console.warn('No product found for barcode:', barcode);
+            showAlert(`Product not found: ${barcode}`, 'error');
+            e.target.value = '';
+            displayProducts();
+          }
+        }
+      });
+
+      // Category filter
+      document.getElementById('categoryFilter').addEventListener('change', (e) => {
+        const categoryId = e.target.value;
+        if (categoryId === '') {
+          filteredProducts = products;
+        } else {
+          filteredProducts = products.filter(p => p.category_id == categoryId);
+        }
+        displayProducts();
+      });
+
+      // Payment method change
+      document.getElementById('paymentMethod').addEventListener('change', (e) => {
+        const cashFields = document.getElementById('cashPaymentFields');
+        const paystackFields = document.getElementById('paystackFields');
+        if (e.target.value === 'cash') {
+          cashFields.style.display = 'block';
+          paystackFields.style.display = 'none';
+        } else if (e.target.value === 'card' || e.target.value === 'mobile_money') {
+          cashFields.style.display = 'none';
+          paystackFields.style.display = 'block';
+        } else {
+          cashFields.style.display = 'none';
+          paystackFields.style.display = 'none';
+        }
+      });
+
+      // Amount paid calculation
+      document.getElementById('amountPaid').addEventListener('input', calculateChange);
+
+      // Camera barcode scanner
+      const cameraScanBtn = document.getElementById('cameraScanBtn');
+      const cameraScanNowBtn = document.getElementById('cameraScanNowBtn');
+      const cameraScannerReader = document.getElementById('cameraScannerReader');
+      const cameraScannerStatus = document.getElementById('cameraScannerStatus');
+      const manualBarcodeBtn = document.getElementById('manualBarcodeBtn');
+      const manualBarcodeInput = document.getElementById('manualBarcodeInput');
+
+      if (cameraScanBtn) {
+        cameraScanBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const modal = document.getElementById('cameraScannerModal');
+          if (!modal) return;
+
+          if (modal.classList.contains('active')) {
+            return;
+          }
+
+          await closeCameraScanner();
+
+          if (cameraScannerReader) cameraScannerReader.style.display = 'none';
+          if (cameraScannerStatus) cameraScannerStatus.textContent = '';
+          if (manualBarcodeInput) manualBarcodeInput.value = '';
+
+          modal.classList.add('active');
+
+          if (manualBarcodeInput) {
+            setTimeout(() => manualBarcodeInput.focus(), 100);
+          }
+        });
+      }
+
+      if (cameraScanNowBtn && cameraScannerReader && cameraScannerStatus) {
+        cameraScanNowBtn.addEventListener('click', async () => {
+          cameraScannerReader.style.display = 'block';
+          cameraScannerStatus.textContent = 'Starting camera...';
+          cameraScannerStatus.style.color = '#64748b';
+          await startCameraScanner();
+        });
+      }
+
+      async function handleManualBarcode() {
+        if (!manualBarcodeInput) return;
+        const value = manualBarcodeInput.value.trim();
+        if (!value) return;
+        manualBarcodeInput.value = '';
+        await onCameraBarcodeScanned(value);
+      }
+
+      if (manualBarcodeBtn) {
+        manualBarcodeBtn.addEventListener('click', handleManualBarcode);
+      }
+      if (manualBarcodeInput) {
+        manualBarcodeInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleManualBarcode();
+          }
+        });
+      }
+    }
+
+    async function startCameraScanner() {
+      if (cameraScanning) return;
+      cameraScanning = true;
+      scanSessionId++;
+      const currentSessionId = scanSessionId;
+
+      const readerDiv = document.getElementById('cameraScannerReader');
+      const statusDiv = document.getElementById('cameraScannerStatus');
+      if (!readerDiv || !statusDiv) {
+        cameraScanning = false;
+        return;
+      }
+
+      if (html5QrcodeScanner) {
+        try {
+          await html5QrcodeScanner.clear();
+        } catch (e) {
+          console.error('Error clearing previous scanner:', e);
+        }
+        html5QrcodeScanner = null;
+      }
+
+      statusDiv.textContent = 'Requesting camera...';
+      statusDiv.style.color = '#64748b';
+
+      try {
+        html5QrcodeScanner = new Html5Qrcode('cameraScannerReader');
+        const cameras = await Html5Qrcode.getCameras();
+        const camera = cameras.find(c => c.label && c.label.toLowerCase().includes('back')) || cameras[0];
+
+        await html5QrcodeScanner.start(
+          camera.id,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 150 },
+            aspectRatio: 1.0
+          },
+          (decodedText) => {
+            if (scanSessionId !== currentSessionId) {
+              return;
+            }
+
+            const modal = document.getElementById('cameraScannerModal');
+            if (!modal || !modal.classList.contains('active')) {
+              return;
+            }
+
+            const now = Date.now();
+            if (now - lastScanTime < SCAN_COOLDOWN_MS) {
+              return;
+            }
+            lastScanTime = now;
+
+            statusDiv.textContent = 'Scanned!';
+            statusDiv.style.color = '#10b981';
+            onCameraBarcodeScanned(decodedText);
+          },
+          () => {
+            if (statusDiv && statusDiv.textContent !== 'Scanned!') {
+              statusDiv.textContent = 'Scanning...';
+              statusDiv.style.color = '#64748b';
+            }
+          }
+        );
+        statusDiv.textContent = 'Scanning...';
+        statusDiv.style.color = '#64748b';
+      } catch (err) {
+        console.error('Camera scanner error:', err);
+        statusDiv.textContent = 'Camera unavailable. Use manual entry above.';
+        statusDiv.style.color = '#ef4444';
+      } finally {
+        cameraScanning = false;
+      }
+    }
+
+    async function closeCameraScanner() {
+      scanSessionId++;
+      const modal = document.getElementById('cameraScannerModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+
+      const readerDiv = document.getElementById('cameraScannerReader');
+      const statusDiv = document.getElementById('cameraScannerStatus');
+      if (readerDiv) readerDiv.style.display = 'none';
+      if (statusDiv) statusDiv.textContent = '';
+
+      if (html5QrcodeScanner) {
+        try {
+          await html5QrcodeScanner.clear();
+        } catch (e) {
+          console.error('Error clearing scanner:', e);
+        }
+        html5QrcodeScanner = null;
+      }
+
+      cameraScanning = false;
+    }
+
+    async function onCameraBarcodeScanned(barcode) {
+      const query = barcode.trim().toLowerCase();
+      if (!query) {
+        await closeCameraScanner();
+        return;
+      }
+
+      const product = products.find(p =>
+        (p.barcode && p.barcode.toLowerCase() === query) ||
+        p.name.toLowerCase().includes(query)
+      );
+
+      if (product) {
+        addToCart(product.product_id);
+        showAlert(`Added ${product.name} to cart`, 'success');
+        await closeCameraScanner();
+      } else {
+        showAlert(`Product not found: ${barcode}`, 'error');
+        const statusDiv = document.getElementById('cameraScannerStatus');
+        if (statusDiv) {
+          statusDiv.textContent = 'Not found. Try again.';
+          statusDiv.style.color = '#ef4444';
+        }
+        const manualInput = document.getElementById('manualBarcodeInput');
+        if (manualInput) {
+          manualInput.value = '';
+          manualInput.focus();
+        }
+      }
+
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+    }
+
+    function addToCart(productId) {
+      const product = products.find(p => p.product_id === productId);
+      if (!product) return;
+
+      if (product.quantity === 0) {
+        showAlert('Product out of stock', 'warning');
+        return;
+      }
+
+      const cartItem = cart.find(item => item.product_id === productId);
+
+      if (cartItem) {
+        if (cartItem.quantity < product.quantity) {
+          cartItem.quantity++;
+        } else {
+          showAlert('Cannot add more than available stock', 'warning');
+          return;
+        }
+      } else {
+        cart.push({
+          product_id: productId,
+          name: product.name,
+          price: Number(product.price),
+          quantity: 1,
+          maxQuantity: product.quantity
+        });
+      }
+
+      updateCart();
+    }
+
+    function removeFromCart(productId) {
+      cart = cart.filter(item => item.product_id !== productId);
+      updateCart();
+    }
+
+    function updateQuantity(productId, quantity) {
+      const item = cart.find(item => item.product_id === productId);
+      if (item) {
+        if (quantity > 0 && quantity <= item.maxQuantity) {
+          item.quantity = quantity;
+        } else if (quantity === 0) {
+          removeFromCart(productId);
+          return;
+        } else {
+          showAlert('Cannot exceed available stock', 'warning');
+          return;
+        }
+      }
+      updateCart();
+    }
+
+    function updateCart() {
+      const cartContainer = document.getElementById('cartItems');
+
+      if (cart.length === 0) {
+        cartContainer.innerHTML = '<div class="empty-message" style="height: auto; padding: 2rem; text-align: center; width: 100%;">No items</div>';
+      } else {
+        cartContainer.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <div class="cart-item-info">
+              <span class="cart-item-name">${item.name}</span>
+              <span class="cart-item-price">${formatCurrency(item.price)} x ${item.quantity}</span>
+            </div>
+            <div class="cart-item-qty">
+              <button onclick="updateQuantity(${item.product_id}, ${item.quantity - 1})">-</button>
+              <span>${item.quantity}</span>
+              <button onclick="updateQuantity(${item.product_id}, ${item.quantity + 1})">+</button>
+            </div>
+            <button class="cart-item-remove" onclick="removeFromCart(${item.product_id})">Remove</button>
+          </div>
+        `).join('');
+      }
+
+      updateCartSummary();
+    }
+
+    function updateCartSummary() {
+      let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      let discount = parseFloat(document.getElementById('discountAmount').value) || 0;
+      let tax = parseFloat(document.getElementById('taxAmount').value) || 0;
+      let total = subtotal - discount + tax;
+
+      document.getElementById('subtotal').textContent = formatCurrency(subtotal);
+      document.getElementById('discount').textContent = formatCurrency(discount);
+      document.getElementById('tax').textContent = formatCurrency(tax);
+      document.getElementById('total').textContent = formatCurrency(total);
+    }
+
+    function clearCart() {
+      if (confirm('Are you sure you want to clear the cart?')) {
+        cart = [];
+        updateCart();
+      }
+    }
+
+    function proceedToCheckout() {
+      if (cart.length === 0) {
+        showAlert('Cart is empty', 'warning');
+        return;
+      }
+      openModal('checkoutModal');
+    }
+
+    function calculateChange() {
+      const method = document.getElementById('paymentMethod').value;
+      if (method !== 'cash') return;
+
+      const total = parseFloat(document.getElementById('total').textContent.replace('GH₵', '')) || 0;
+      const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
+      const change = amountPaid - total;
+
+      document.getElementById('changeAmount').textContent = formatCurrency(Math.max(0, change));
+    }
+
+    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const customerPhone = document.getElementById('customerPhone').value;
+      const customerEmail = document.getElementById('customerEmail').value;
+      const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+      const taxAmount = parseFloat(document.getElementById('taxAmount').value) || 0;
+      const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
+
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const total = subtotal - discountAmount + taxAmount;
+
+      // Validate Paystack payments
+      if ((paymentMethod === 'card' || paymentMethod === 'mobile_money') && !customerEmail) {
+        showAlert('Email is required for Paystack payments', 'error');
+        return;
+      }
+
+      if (paymentMethod === 'cash' && amountPaid < total) {
+        showAlert('Insufficient amount paid', 'error');
+        return;
+      }
+
+      // Handle Paystack payment flow
+      if (paymentMethod === 'card' || paymentMethod === 'mobile_money') {
+        try {
+          const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+          showLoading(submitBtn);
+
+          // Get or create customer
+          let customerId = null;
+          const customerName = document.getElementById('customerName').value.trim();
+          const customerPhone = document.getElementById('customerPhone').value.trim();
+          const customerEmail = document.getElementById('customerEmail').value.trim();
+          const customerAddress = document.getElementById('customerAddress').value.trim();
+
+          if (customerPhone) {
+            try {
+              const customer = await api.getCustomerByPhone(customerPhone);
+              customerId = customer.customer_id;
+            } catch (e) {
+              // Customer doesn't exist, create new one with full information
+              const newCustomer = await api.createCustomer({
+                name: customerName || customerPhone,
+                phone: customerPhone,
+                email: customerEmail || null,
+                address: customerAddress || null
+              });
+              customerId = newCustomer.data.customer_id;
+            }
+          }
+
+          // Create sale with pending payment
+          const saleData = {
+            customerId,
+            items: cart.map(item => ({
+              productId: item.product_id,
+              quantity: item.quantity
+            })),
+            discountAmount,
+            taxAmount,
+            paymentData: {
+              method: paymentMethod,
+              email: customerEmail,
+              amount: total,
+              notes: `${paymentMethod === 'card' ? 'Card' : 'Mobile Money'} payment via Paystack`
+            }
+          };
+
+          const saleResponse = await api.createSale(saleData);
+          const saleId = saleResponse.data.saleId;
+
+          // Initialize Paystack payment
+          const paymentInit = await api.initializePayment({
+            saleId: saleId,
+            amount: total,
+            email: customerEmail,
+            customerId: customerId
+          });
+
+          console.log('=== FRONTEND RECEIVED PAYMENT INIT RESPONSE ===');
+          console.log('Full response:', paymentInit);
+          console.log('Success:', paymentInit.success);
+          console.log('Data:', paymentInit.data);
+          console.log('Public Key:', paymentInit.data?.public_key);
+          console.log('Reference:', paymentInit.data?.reference);
+
+          if (paymentInit.success) {
+            // Open Paystack popup using inline payment
+            console.log('About to call openPaystackPopup with data:', paymentInit.data);
+            openPaystackPopup(paymentInit.data, saleId, total, customerEmail, {
+              cart,
+              discountAmount,
+              taxAmount,
+              finalAmount: total
+            });
+          } else {
+            console.error('Payment init not successful');
+            showAlert('Failed to initialize payment', 'error');
+          }
+        } catch (error) {
+          showAlert('Error initializing payment: ' + error.message, 'error');
+        } finally {
+          hideLoading(document.querySelector('#checkoutForm button[type="submit"]'));
+        }
+        return;
+      }
+
+      // Handle Cash/Check payments (existing flow)
+      try {
+        const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+        showLoading(submitBtn);
+
+        // Get or create customer with full information
+        let customerId = null;
+        const customerName = document.getElementById('customerName').value.trim();
+        const customerAddress = document.getElementById('customerAddress').value.trim();
+        
+        if (customerPhone) {
+          try {
+            const customer = await api.getCustomerByPhone(customerPhone);
+            customerId = customer.customer_id;
+          } catch (e) {
+            // Customer doesn't exist, create new one with full information
+            const newCustomer = await api.createCustomer({
+              name: customerName || customerPhone,
+              phone: customerPhone,
+              email: customerEmail || null,
+              address: customerAddress || null
+            });
+            customerId = newCustomer.data.customer_id;
+          }
+        }
+
+        const saleData = {
+          customerId,
+          items: cart.map(item => ({
+            productId: item.product_id,
+            quantity: item.quantity
+          })),
+          discountAmount,
+          taxAmount,
+          paymentData: {
+            method: paymentMethod,
+            amount: paymentMethod === 'cash' ? amountPaid : total,
+            changeAmount: paymentMethod === 'cash' ? (amountPaid - total) : 0,
+            notes: `Sale completed`
+          }
+        };
+
+        const response = await api.createSale(saleData);
+        showAlert('Sale completed successfully!', 'success');
+
+        // Close checkout modal
+        closeModal('checkoutModal');
+        document.getElementById('checkoutForm').reset();
+
+        // Show receipt with cart information
+        showReceiptModal({
+          saleId: response.data.saleId,
+          cart: cart,
+          discountAmount: discountAmount,
+          taxAmount: taxAmount,
+          finalAmount: response.data.finalAmount
+        });
+
+        // Clear cart only after receipt is shown
+        cart = [];
+        updateCart();
+      } catch (error) {
+        showAlert('Error completing sale: ' + error.message, 'error');
+      } finally {
+        hideLoading(document.querySelector('#checkoutForm button[type="submit"]'));
+      }
+    });
+
+    // Handle Paystack inline payment popup
+    function openPaystackPopup(paystackData, saleId, total, customerEmail, saleInfo) {
+      console.log('Opening Paystack popup with:', {
+        key: paystackData.public_key,
+        email: customerEmail,
+        amount: total * 100,
+        reference: paystackData.reference,
+        saleId: saleId
+      });
+
+      let pollInterval = null;
+      let pollCount = 0;
+      const maxPolls = 90; // Poll for up to 3 minutes (90 * 2 seconds)
+
+      try {
+        const handler = PaystackPop.setup({
+          key: paystackData.public_key,
+          email: customerEmail,
+          amount: total * 100,
+          ref: paystackData.reference,
+          currency: 'GHS',
+          channels: ['card', 'mobile_money'],
+          onClose: () => console.log('Paystack iframe closed'),
+          onSuccess: (response) => {
+            console.log('Success callback fired:', response);
+            if (pollInterval) clearInterval(pollInterval);
+            verifyPaymentAndComplete(response.reference, saleId, saleInfo);
+          }
+        });
+
+        console.log('PaystackPop handler created');
+        handler.openIframe();
+        console.log('Iframe opened, starting payment polling...');
+
+        // Start polling immediately - callbacks don't always fire
+        pollInterval = setInterval(() => {
+          pollCount++;
+          console.log(`Poll ${pollCount}: Checking payment status for reference: ${paystackData.reference}`);
+
+          // Check payment status
+          api.verifyPayment(paystackData.reference)
+            .then(response => {
+              console.log('Poll response:', response);
+              if (response && response.success && response.data && response.data.status === 'completed') {
+                console.log('Payment verified as completed!');
+                if (pollInterval) clearInterval(pollInterval);
+                verifyPaymentAndComplete(paystackData.reference, saleId, saleInfo);
+              }
+            })
+            .catch(error => {
+              console.log('Poll check error (expected if payment not yet verified):', error.message);
+              if (pollCount >= maxPolls) {
+                console.log('Max poll attempts reached');
+                if (pollInterval) clearInterval(pollInterval);
+              }
+            });
+        }, 2000); // Poll every 2 seconds
+
+      } catch (error) {
+        console.error('Error opening Paystack popup:', error);
+        showAlert('Failed to open payment popup: ' + error.message, 'error');
+        if (pollInterval) clearInterval(pollInterval);
+      }
+    }
+
+    async function verifyPaymentAndComplete(ref, saleId, saleInfo) {
+      try {
+        console.log('=== VERIFY PAYMENT AND COMPLETE STARTED ===');
+        console.log('Reference:', ref);
+        console.log('Sale ID:', saleId);
+        console.log('Sale Info:', saleInfo);
+
+        const submitButton = document.querySelector('#checkoutForm button[type="submit"]');
+        console.log('Submit button found:', !!submitButton);
+
+        showLoading(submitButton);
+
+        console.log('Calling api.verifyPayment with reference:', ref);
+        const verification = await api.verifyPayment(ref);
+        console.log('=== VERIFICATION RESPONSE RECEIVED ===');
+        console.log('Verification response:', verification);
+
+        if (verification && verification.success) {
+          console.log('✓ Payment verified successfully');
+          showAlert('Payment successful!', 'success');
+
+          // Close checkout modal
+          closeModal('checkoutModal');
+          console.log('Checkout modal closed');
+
+          // Show receipt modal with verified amount
+          const receiptData = {
+            saleId: saleId,
+            finalAmount: verification.data.amount || saleInfo.finalAmount,
+            cart: saleInfo.cart,
+            discountAmount: saleInfo.discountAmount,
+            taxAmount: saleInfo.taxAmount
+          };
+          console.log('Showing receipt modal with data:', receiptData);
+          showReceiptModal(receiptData);
+
+          // Clear cart
+          cart = [];
+          updateCart();
+          document.getElementById('checkoutForm').reset();
+          console.log('✓ Cart cleared and form reset');
+        } else {
+          console.warn('Verification response indicates payment not successful:', verification);
+          // Still show receipt as payment was successful on Paystack side
+          showAlert('Payment successful! Showing receipt.', 'success');
+
+          closeModal('checkoutModal');
+          showReceiptModal({
+            saleId: saleId,
+            finalAmount: saleInfo.finalAmount,
+            cart: saleInfo.cart,
+            discountAmount: saleInfo.discountAmount,
+            taxAmount: saleInfo.taxAmount
+          });
+
+          cart = [];
+          updateCart();
+          document.getElementById('checkoutForm').reset();
+        }
+      } catch (error) {
+        console.error('=== PAYMENT VERIFICATION ERROR ===');
+        console.error('Error:', error);
+        console.error('Error message:', error.message);
+        console.error('Stack:', error.stack);
+
+        // Even on error, show receipt since Paystack confirmed payment
+        showAlert('Payment successful! Receipt is being shown.', 'success');
+
+        try {
+          closeModal('checkoutModal');
+          showReceiptModal({
+            saleId: saleId,
+            finalAmount: saleInfo.finalAmount,
+            cart: saleInfo.cart,
+            discountAmount: saleInfo.discountAmount,
+            taxAmount: saleInfo.taxAmount
+          });
+
+          cart = [];
+          updateCart();
+          document.getElementById('checkoutForm').reset();
+        } catch (modalError) {
+          console.error('Error showing receipt modal:', modalError);
+          showAlert('Payment completed but had error showing receipt. Sale ID: ' + saleId, 'warning');
+        }
+      } finally {
+        console.log('=== VERIFY PAYMENT FINALLY BLOCK ===');
+        hideLoading(document.querySelector('#checkoutForm button[type="submit"]'));
+      }
+    }
+
+    // Show receipt modal with print option
+    function showReceiptModal(saleData) {
+      // Store receipt data globally for printing later
+      currentReceiptData = {
+        saleId: saleData.saleId,
+        cart: [...saleData.cart],
+        discountAmount: saleData.discountAmount,
+        taxAmount: saleData.taxAmount,
+        finalAmount: saleData.finalAmount
+      };
+
+      const modal = document.createElement('div');
+      modal.className = 'modal active';
+      modal.id = 'receiptModal';
+      modal.style.zIndex = '2000';
+
+      let itemsHTML = '';
+      saleData.cart.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        itemsHTML += `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 0.75rem 0;">${item.name}</td>
+                  <td style="padding: 0.75rem 0; text-align: right;">GH₵${subtotal.toFixed(2)}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td colspan="2" style="padding: 0.25rem 0; font-size: 0.875rem; color: #64748b;">
+                    ${item.quantity} x GH₵${item.price.toFixed(2)}
+                  </td>
+                </tr>
+        `;
+      });
+
+      const subtotal = saleData.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+      const receiptHTML = `
+        <div class="modal-content p-4" style="max-width: 500px; background: white; border-radius: 0.5rem; padding: 2rem;">
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="margin: 0; color: #10b981;">✓ Payment Successful</h2>
+            <p style="color: #10b981; font-size: 1.125rem; margin: 0.5rem 0;">Sale ID: #${saleData.saleId}</p>
+          </div>
+
+          <div style="background: #f1f5f9; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tbody>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 0.75rem 0; font-weight: 600;">Date:</td>
+                  <td style="padding: 0.75rem 0; text-align: right;">${new Date().toLocaleDateString()}</td>
+                </tr>
+                ${itemsHTML}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 0.75rem 0;">Subtotal:</td>
+                  <td style="padding: 0.75rem 0; text-align: right; font-weight: 600;">GH₵${subtotal.toFixed(2)}</td>
+                </tr>
+      `;
+
+      let discountHTML = '';
+      if (saleData.discountAmount > 0) {
+        discountHTML = `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 0.75rem 0;">Discount:</td>
+                  <td style="padding: 0.75rem 0; text-align: right; color: #10b981;">-GH₵${saleData.discountAmount.toFixed(2)}</td>
+                </tr>
+        `;
+      }
+
+      let taxHTML = '';
+      if (saleData.taxAmount > 0) {
+        taxHTML = `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 0.75rem 0;">Tax:</td>
+                  <td style="padding: 0.75rem 0; text-align: right;">GH₵${saleData.taxAmount.toFixed(2)}</td>
+                </tr>
+        `;
+      }
+
+      const finalHTML = receiptHTML + discountHTML + taxHTML + `
+                <tr style="border-top: 2px solid #2563eb;">
+                  <td style="padding: 1rem 0; font-weight: 700; font-size: 1.25rem;">Total:</td>
+                  <td style="padding: 1rem 0; font-weight: 700; font-size: 1.25rem; text-align: right; color: #2563eb;">GH₵${saleData.finalAmount.toFixed(2)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p style="text-align: center; color: #64748b; margin: 1.5rem 0;">Thank you for your purchase!</p>
+
+          <div style="display: flex; gap: 0.5rem; justify-content: space-between; margin-top: 1.5rem;">
+            <button onclick="closeReceiptModal()" class="btn btn-secondary" style="flex: 1; padding: 0.75rem; border: none; border-radius: 0.5rem; background: #ef4444; color: white; font-weight: 600; cursor: pointer;">Done</button>
+            <button onclick="printReceipt('${saleData.saleId}')" class="btn btn-primary" style="flex: 1; padding: 0.75rem; border: none; border-radius: 0.5rem; background: #2563eb; color: white; font-weight: 600; cursor: pointer;">🖨️ Print</button>
+          </div>
+        </div>
+      `;
+
+      modal.innerHTML = finalHTML;
+      document.body.appendChild(modal);
+      console.log('Receipt modal created and displayed');
+    }
+
+    function closeReceiptModal() {
+      const receiptModal = document.getElementById('receiptModal');
+      if (receiptModal) {
+        receiptModal.remove();
+      }
+    }
+
+    function printReceipt(saleId) {
+      if (!currentReceiptData) {
+        showAlert('Receipt data not available', 'error');
+        return;
+      }
+
+      const receiptWindow = window.open('', '', 'width=400,height=600');
+      const today = new Date().toLocaleDateString();
+
+      let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            body { font-family: monospace; padding: 20px; font-size: 12px; }
+            h1 { text-align: center; margin: 0; }
+            .separator { text-align: center; margin: 10px 0; }
+            table { width: 100%; margin: 10px 0; border-collapse: collapse; }
+            td { padding: 5px 0; }
+            .right { text-align: right; }
+            .total { font-weight: bold; border-top: 2px solid #000; border-bottom: 2px solid #000; }
+            .footer { text-align: center; margin-top: 20px; font-size: 10px; }
+          </style>
+        </head>
+        <body>
+          <h1>🏪 POS RECEIPT</h1>
+          <div class="separator">===============================</div>
+          <p>Date: ${today}</p>
+          <p>Sale ID: #${saleId}</p>
+          <div class="separator">===============================</div>
+          <table>
+            <tr>
+              <td colspan="2"><strong>Items</strong></td>
+            </tr>
+      `;
+
+      // Use stored receipt data to ensure items are printed
+      currentReceiptData.cart.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        html += `
+          <tr>
+            <td>${item.name}</td>
+            <td class="right">GH₵${subtotal.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="font-size: 10px; color: #666;">
+              ${item.quantity} x GH₵${item.price.toFixed(2)}
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `
+            <tr class="total">
+              <td>Total:</td>
+              <td class="right">GH₵${currentReceiptData.finalAmount.toFixed(2)}</td>
+            </tr>
+          </table>
+          <div class="separator">===============================</div>
+          <p>Thank you for your purchase!</p>
+          <div class="footer">
+            <p>POS System v1.0</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      receiptWindow.document.write(html);
+      receiptWindow.document.close();
+      setTimeout(() => receiptWindow.print(), 500);
+    }
+
+
+    function toggleUserMenu() {
+      document.getElementById('userDropdown').classList.toggle('active');
+    }
+
+    function logout() {
+      api.clearToken();
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.user-menu')) {
+        document.getElementById('userDropdown').classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>

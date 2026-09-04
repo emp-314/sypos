@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System - Reports & Analytics</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: white;
+      border-right: 1px solid #e2e8f0;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      color: #2563eb;
+      margin-bottom: 2rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      color: #64748b;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .sidebar-nav a:hover {
+      background: #f1f5f9;
+      color: #2563eb;
+    }
+
+    .sidebar-nav a.active {
+      background: #dbeafe;
+      color: #2563eb;
+      font-weight: 500;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      color: #1e293b;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-badge {
+      background: #2563eb;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .user-badge.admin {
+      background: #dc2626;
+    }
+
+    .user-badge.manager {
+      background: #9333ea;
+    }
+
+    .user-badge.cashier {
+      background: #0891b2;
+    }
+
+    .logout-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #dc2626;
+    }
+
+    .content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .filters {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-weight: 500;
+      color: #475569;
+      font-size: 0.875rem;
+    }
+
+    input,
+    select {
+      padding: 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn {
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background: #64748b;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .stat-change {
+      font-size: 0.875rem;
+      color: #22c55e;
+      margin-top: 0.5rem;
+    }
+
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #1e293b;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 1rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #475569;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+
+    /* Mobile menu toggle */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      color: var(--text);
+    }
+
+    .menu-toggle:hover {
+      color: var(--primary);
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem;
+      }
+
+      .header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+      <div class="sidebar-header">🏪 POS</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li data-roles="admin,manager,cashier"><a href="dashboard.html">📊 Dashboard</a></li>
+          <li data-roles="cashier,manager,admin"><a href="pos.html">🛒 POS</a></li>
+          <li data-roles="admin,manager"><a href="products.html">📦 Products</a></li>
+          <li data-roles="admin,manager"><a href="customers.html">👥 Customers</a></li>
+          <li data-roles="admin,manager"><a href="sales.html">📋 Sales</a></li>
+          <li data-roles="admin,manager"><a href="reports.html" class="active">📈 Reports</a></li>
+          <li data-roles="admin" class="user-link"><a href="users.html">👤 Users</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+        <h1>📈 Reports & Analytics</h1>
+        <div class="user-info">
+          <span id="currentUser">Loading...</span>
+          <span class="user-badge admin" id="roleIndicator"></span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content">
+        <div id="alertContainer"></div>
+
+        <!-- Filters -->
+        <div class="filters">
+          <div class="filter-group">
+            <label for="reportStartDate">Start Date</label>
+            <input type="date" id="reportStartDate">
+          </div>
+          <div class="filter-group">
+            <label for="reportEndDate">End Date</label>
+            <input type="date" id="reportEndDate">
+          </div>
+          <div class="filter-group" style="display: flex; align-items: flex-end; gap: 0.5rem;">
+            <button class="btn btn-primary" onclick="generateReport()" style="flex: 1;">Generate Report</button>
+            <button class="btn btn-secondary" onclick="resetReport()" style="flex: 1;">Reset</button>
+          </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" id="totalRevenue">₵0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Transactions</div>
+            <div class="stat-value" id="totalTransactions">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Average Transaction</div>
+            <div class="stat-value" id="averageTransaction">₵0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Discounts</div>
+            <div class="stat-value" id="totalDiscounts">₵0.00</div>
+          </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="card">
+          <div class="card-title">Revenue Trend</div>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Payment Methods Chart -->
+        <div class="card">
+          <div class="card-title">Payment Methods</div>
+          <div class="chart-container">
+            <canvas id="paymentMethodChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="card">
+          <div class="card-title">Top Products by Revenue</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity Sold</th>
+                  <th>Revenue</th>
+                  <th>% of Total</th>
+                </tr>
+              </thead>
+              <tbody id="topProductsBody">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: #64748b;">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sales by Cashier (Admin only) -->
+        <div class="card" id="salesByCashierCard" style="display: none;">
+          <div class="card-title">Sales by Cashier</div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cashier</th>
+                  <th>Transactions</th>
+                  <th>Total Revenue</th>
+                  <th>Average Sale</th>
+                </tr>
+              </thead>
+              <tbody id="salesByCashierBody">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: #64748b;">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Check authorization
+    requireRole(['admin', 'manager']);
+
+    let currentUser = null;
+    let chartInstances = {};
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCurrentUser();
+      setDefaultDateRange();
+      await generateReport();
+    });
+
+    async function loadCurrentUser() {
+      try {
+        const response = await api.getCurrentUser();
+        currentUser = response;
+        document.getElementById('currentUser').textContent = `${response.username}`;
+        document.getElementById('roleIndicator').textContent = response.role.toUpperCase();
+        document.getElementById('roleIndicator').className = `user-badge ${response.role}`;
+
+        // Filter menu items based on role
+        filterMenuByRole(response.role);
+
+        // Show admin-only elements
+        if (response.role === 'admin') {
+          document.getElementById('salesByCashierCard').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error loading current user:', error);
+      }
+    }
+
+    function filterMenuByRole(userRole) {
+      const navItems = document.querySelectorAll('.sidebar-nav li[data-roles]');
+      navItems.forEach(item => {
+        const allowedRoles = item.dataset.roles ? item.dataset.roles.split(',') : [];
+        if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+          item.style.display = 'none';
+        } else {
+          item.style.display = 'block';
+        }
+      });
+    }
+
+    function setDefaultDateRange() {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+
+      document.getElementById('reportStartDate').valueAsDate = startDate;
+      document.getElementById('reportEndDate').valueAsDate = endDate;
+    }
+
+    async function generateReport() {
+      try {
+        const startDate = document.getElementById('reportStartDate').value;
+        const endDate = document.getElementById('reportEndDate').value;
+
+        if (!startDate || !endDate) {
+          showAlert('Please select both start and end dates', 'error');
+          return;
+        }
+
+        // Fetch sales data
+        const response = await api.getAllSales(1000);
+        const allSales = response.data || [];
+
+        // Filter by date range
+        const filteredSales = allSales.filter(sale => {
+          const saleDate = new Date(sale.sale_date).toISOString().split('T')[0];
+          return saleDate >= startDate && saleDate <= endDate;
+        });
+
+        updateStatistics(filteredSales);
+        updateCharts(filteredSales);
+      } catch (error) {
+        showAlert('Error generating report: ' + error.message, 'error');
+        console.error(error);
+      }
+    }
+
+    function updateStatistics(sales) {
+      const totalRevenue = sales.reduce((sum, s) => sum + parseFloat(s.final_amount), 0);
+      const totalTransactions = sales.length;
+      const averageTransaction = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+      const totalDiscounts = sales.reduce((sum, s) => sum + parseFloat(s.discount_amount), 0);
+
+      document.getElementById('totalRevenue').textContent = `₵${totalRevenue.toFixed(2)}`;
+      document.getElementById('totalTransactions').textContent = totalTransactions;
+      document.getElementById('averageTransaction').textContent = `₵${averageTransaction.toFixed(2)}`;
+      document.getElementById('totalDiscounts').textContent = `₵${totalDiscounts.toFixed(2)}`;
+    }
+
+    async function updateCharts(sales) {
+      updateRevenueChart(sales);
+      updatePaymentMethodChart(sales);
+      await updateTopProducts(sales);
+      if (currentUser && currentUser.role === 'admin') {
+        updateSalesByCashier(sales);
+      }
+    }
+
+    function updateRevenueChart(sales) {
+      const dailyData = {};
+      
+      sales.forEach(sale => {
+        const date = new Date(sale.sale_date).toISOString().split('T')[0];
+        dailyData[date] = (dailyData[date] || 0) + parseFloat(sale.final_amount);
+      });
+
+      const dates = Object.keys(dailyData).sort();
+      const revenues = dates.map(date => dailyData[date]);
+
+      const ctx = document.getElementById('revenueChart').getContext('2d');
+      
+      if (chartInstances.revenue) {
+        chartInstances.revenue.destroy();
+      }
+
+      chartInstances.revenue = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [{
+            label: 'Daily Revenue (₵)',
+            data: revenues,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Revenue (₵)' }
+            }
+          }
+        }
+      });
+    }
+
+    function updatePaymentMethodChart(sales) {
+      // For now, show a simple breakdown
+      const methods = {
+        'cash': 0,
+        'card': 0,
+        'mobile_money': 0,
+        'check': 0,
+        'paystack': 0
+      };
+
+      const ctx = document.getElementById('paymentMethodChart').getContext('2d');
+      
+      if (chartInstances.payment) {
+        chartInstances.payment.destroy();
+      }
+
+      chartInstances.payment = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Cash', 'Card', 'Mobile Money', 'Check', 'Paystack'],
+          datasets: [{
+            data: [
+              sales.filter(s => s.status === 'completed').length,
+              sales.filter(s => s.status === 'cancelled').length,
+              sales.filter(s => s.status === 'returned').length,
+              0, 0
+            ],
+            backgroundColor: [
+              '#2563eb',
+              '#9333ea',
+              '#0891b2',
+              '#22c55e',
+              '#f59e0b'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    async function updateTopProducts(sales) {
+      // Since we don't have direct product sales data from the API,
+      // we'll show a placeholder
+      const body = document.getElementById('topProductsBody');
+      body.innerHTML = `
+        <tr>
+          <td colspan="4" style="text-align: center; color: #64748b;">
+            Product details available from enhanced sales API
+          </td>
+        </tr>
+      `;
+    }
+
+    function updateSalesByCashier(sales) {
+      // Group sales by cashier
+      const cashierData = {};
+      
+      sales.forEach(sale => {
+        const userId = sale.user_id;
+        if (!cashierData[userId]) {
+          cashierData[userId] = {
+            count: 0,
+            revenue: 0,
+            username: `User #${userId}`
+          };
+        }
+        cashierData[userId].count++;
+        cashierData[userId].revenue += parseFloat(sale.final_amount);
+      });
+
+      const body = document.getElementById('salesByCashierBody');
+      const rows = Object.entries(cashierData).map(([userId, data]) => `
+        <tr>
+          <td>${data.username}</td>
+          <td>${data.count}</td>
+          <td>₵${data.revenue.toFixed(2)}</td>
+          <td>₵${(data.revenue / data.count).toFixed(2)}</td>
+        </tr>
+      `);
+
+      body.innerHTML = rows.length > 0 ? rows.join('') : '<tr><td colspan="4" style="text-align: center;">No data</td></tr>';
+    }
+
+    function resetReport() {
+      setDefaultDateRange();
+      generateReport();
+    }
+
+    function logout() {
+      api.clearToken();
+      localStorage.removeItem('user');
+      window.location.href = '/frontend/pages/login.html';
+    }
+
+    function showAlert(message, type = 'success') {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      container.appendChild(alert);
+
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transition = 'opacity 0.3s';
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('overlay');
+      if (sidebar) {
+        sidebar.classList.toggle('active');
+      }
+      if (overlay) {
+        overlay.classList.toggle('active');
+      }
+    }
+  </script>
+</body>
+</html>

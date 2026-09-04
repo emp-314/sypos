@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System - Sales</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: white;
+      border-right: 1px solid #e2e8f0;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      color: #2563eb;
+      margin-bottom: 2rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      color: #64748b;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .sidebar-nav a:hover {
+      background: #f1f5f9;
+      color: #2563eb;
+    }
+
+    .sidebar-nav a.active {
+      background: #dbeafe;
+      color: #2563eb;
+      font-weight: 500;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      color: #1e293b;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .user-badge {
+      background: #2563eb;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .user-badge.admin {
+      background: #dc2626;
+    }
+
+    .user-badge.manager {
+      background: #9333ea;
+    }
+
+    .user-badge.cashier {
+      background: #0891b2;
+    }
+
+    .logout-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: #dc2626;
+    }
+
+    .content {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .filters {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-weight: 500;
+      color: #475569;
+      font-size: 0.875rem;
+    }
+
+    input,
+    select {
+      padding: 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn {
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background: #64748b;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .table-container {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: #475569;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status-badge.completed {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-badge.cancelled {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-badge.returned {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+    }
+
+    .alert {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .alert-success {
+      background: #dcfce7;
+      color: #166534;
+      border-left: 4px solid #22c55e;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    .sale-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .sale-detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .sale-detail-label {
+      font-weight: 500;
+      color: #475569;
+    }
+
+    .sale-detail-value {
+      color: #1e293b;
+      font-weight: 600;
+    }
+
+    /* Mobile menu toggle */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      color: var(--text);
+    }
+
+    .menu-toggle:hover {
+      color: var(--primary);
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem;
+      }
+
+      .header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 0.875rem;
+      }
+
+      th, td {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+      <div class="sidebar-header">🏪 POS</div>
+      <nav>
+        <ul class="sidebar-nav">
+          <li data-roles="admin,manager,cashier"><a href="dashboard.html">📊 Dashboard</a></li>
+          <li data-roles="cashier,manager,admin"><a href="pos.html">🛒 POS</a></li>
+          <li data-roles="admin,manager"><a href="products.html">📦 Products</a></li>
+          <li data-roles="admin,manager"><a href="customers.html">👥 Customers</a></li>
+          <li data-roles="admin,manager"><a href="sales.html" class="active">📋 Sales</a></li>
+          <li data-roles="admin,manager"><a href="reports.html">📈 Reports</a></li>
+          <li data-roles="admin" class="user-link"><a href="users.html">👤 Users</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+        <h1>📋 Sales History</h1>
+        <div class="user-info">
+          <span id="currentUser">Loading...</span>
+          <span class="user-badge admin" id="roleIndicator"></span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="content">
+        <div id="alertContainer"></div>
+
+        <!-- Filters -->
+        <div class="filters">
+          <div class="filter-group">
+            <label for="filterStartDate">Start Date</label>
+            <input type="date" id="filterStartDate">
+          </div>
+          <div class="filter-group">
+            <label for="filterEndDate">End Date</label>
+            <input type="date" id="filterEndDate">
+          </div>
+          <div class="filter-group">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus">
+              <option value="">All Statuses</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="returned">Returned</option>
+            </select>
+          </div>
+          <div class="filter-group" id="filterUserGroup" style="display: none;">
+            <label for="filterUser">Cashier</label>
+            <select id="filterUser">
+              <option value="">All Cashiers</option>
+            </select>
+          </div>
+          <div class="filter-group" style="display: flex; align-items: flex-end; gap: 0.5rem;">
+            <button class="btn btn-primary" onclick="applyFilters()" style="flex: 1;">Apply</button>
+            <button class="btn btn-secondary" onclick="resetFilters()" style="flex: 1;">Reset</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats" id="statsContainer" style="display: none;">
+          <div class="stat-card">
+            <div class="stat-label">Total Sales</div>
+            <div class="stat-value" id="statTotalSales">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" id="statTotalRevenue">₵0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Average Sale</div>
+            <div class="stat-value" id="statAverageSale">₵0.00</div>
+          </div>
+        </div>
+
+        <!-- Sales Table -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Sale ID</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Cashier</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="salesTableBody">
+              <tr>
+                <td colspan="7" class="empty-state">Loading sales...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sale Details Modal -->
+  <div class="modal" id="saleModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Sale Details</h2>
+        <button class="close-btn" onclick="closeModal('saleModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="saleDetailsBody">
+        <!-- Content loaded dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('saleModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Check authorization
+    requireRole(['admin', 'manager']);
+
+    let currentUser = null;
+    let allSales = [];
+    let allUsers = [];
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadCurrentUser();
+      await loadUsers();
+      await loadSales();
+      setDefaultDateRange();
+    });
+
+    async function loadCurrentUser() {
+      try {
+        const response = await api.getCurrentUser();
+        currentUser = response;
+        document.getElementById('currentUser').textContent = `${response.username}`;
+        document.getElementById('roleIndicator').textContent = response.role.toUpperCase();
+        document.getElementById('roleIndicator').className = `user-badge ${response.role}`;
+
+        // Filter menu items based on role
+        filterMenuByRole(response.role);
+
+        // Show user filter for admins
+        if (response.role === 'admin') {
+          document.getElementById('filterUserGroup').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error loading current user:', error);
+      }
+    }
+
+    function filterMenuByRole(userRole) {
+      const navItems = document.querySelectorAll('.sidebar-nav li[data-roles]');
+      navItems.forEach(item => {
+        const allowedRoles = item.dataset.roles ? item.dataset.roles.split(',') : [];
+        if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+          item.style.display = 'none';
+        } else {
+          item.style.display = 'block';
+        }
+      });
+    }
+
+    async function loadUsers() {
+      try {
+        if (currentUser && currentUser.role === 'admin') {
+          const response = await api.getAllUsers();
+          allUsers = response.data || [];
+          populateUserFilter();
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    }
+
+    function populateUserFilter() {
+      const filterUser = document.getElementById('filterUser');
+      const cashierUsers = allUsers.filter(u => u.role === 'cashier');
+      
+      cashierUsers.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.user_id;
+        option.textContent = user.username;
+        filterUser.appendChild(option);
+      });
+    }
+
+    async function loadSales() {
+      try {
+        const response = await api.getAllSales(500);
+        allSales = response.data || [];
+        renderSalesTable();
+        updateStats();
+      } catch (error) {
+        showAlert('Error loading sales: ' + error.message, 'error');
+        console.error(error);
+      }
+    }
+
+    function setDefaultDateRange() {
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 30);
+
+      document.getElementById('filterStartDate').valueAsDate = startDate;
+      document.getElementById('filterEndDate').valueAsDate = endDate;
+    }
+
+    function applyFilters() {
+      renderSalesTable();
+      updateStats();
+    }
+
+    function resetFilters() {
+      document.getElementById('filterStartDate').value = '';
+      document.getElementById('filterEndDate').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterUser').value = '';
+      setDefaultDateRange();
+      renderSalesTable();
+      updateStats();
+    }
+
+    function getFilteredSales() {
+      const startDate = document.getElementById('filterStartDate').value;
+      const endDate = document.getElementById('filterEndDate').value;
+      const status = document.getElementById('filterStatus').value;
+      const userId = document.getElementById('filterUser').value;
+
+      return allSales.filter(sale => {
+        const saleDate = new Date(sale.sale_date).toISOString().split('T')[0];
+        
+        if (startDate && saleDate < startDate) return false;
+        if (endDate && saleDate > endDate) return false;
+        if (status && sale.status !== status) return false;
+        if (userId && sale.user_id !== parseInt(userId)) return false;
+
+        return true;
+      });
+    }
+
+    function renderSalesTable() {
+      const filteredSales = getFilteredSales();
+      const tbody = document.getElementById('salesTableBody');
+
+      if (filteredSales.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No sales found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filteredSales.map(sale => {
+        const userData = allUsers.find(u => u.user_id === sale.user_id);
+        const userName = userData ? userData.username : 'Unknown';
+
+        return `
+          <tr>
+            <td><strong>#${sale.sale_id}</strong></td>
+            <td>${formatDateTime(sale.sale_date)}</td>
+            <td>${sale.customer_id ? '👤 Customer' : 'Walk-in'}</td>
+            <td>${escapeHtml(userName)}</td>
+            <td><strong>₵${parseFloat(sale.final_amount).toFixed(2)}</strong></td>
+            <td><span class="status-badge ${sale.status}">${sale.status.toUpperCase()}</span></td>
+            <td>
+              <button class="btn btn-sm btn-primary" onclick="viewSaleDetails(${sale.sale_id})" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">View</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function updateStats() {
+      const filteredSales = getFilteredSales();
+      
+      if (filteredSales.length === 0) {
+        document.getElementById('statsContainer').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('statsContainer').style.display = 'grid';
+
+      const totalSales = filteredSales.length;
+      const totalRevenue = filteredSales.reduce((sum, sale) => sum + parseFloat(sale.final_amount), 0);
+      const averageSale = totalRevenue / totalSales;
+
+      document.getElementById('statTotalSales').textContent = totalSales;
+      document.getElementById('statTotalRevenue').textContent = `₵${totalRevenue.toFixed(2)}`;
+      document.getElementById('statAverageSale').textContent = `₵${averageSale.toFixed(2)}`;
+    }
+
+    async function viewSaleDetails(saleId) {
+      try {
+        const sale = allSales.find(s => s.sale_id === saleId);
+        if (!sale) return;
+
+        const userData = allUsers.find(u => u.user_id === sale.user_id);
+        
+        let detailsHtml = `
+          <div class="sale-detail-row">
+            <span class="sale-detail-label">Sale ID:</span>
+            <span class="sale-detail-value">#${sale.sale_id}</span>
+          </div>
+          <div class="sale-detail-row">
+            <span class="sale-detail-label">Date:</span>
+            <span class="sale-detail-value">${formatDateTime(sale.sale_date)}</span>
+          </div>
+          <div class="sale-detail-row">
+            <span class="sale-detail-label">Cashier:</span>
+            <span class="sale-detail-value">${userData ? userData.username : 'Unknown'}</span>
+          </div>
+          <div class="sale-detail-row">
+            <span class="sale-detail-label">Status:</span>
+            <span class="sale-detail-value"><span class="status-badge ${sale.status}">${sale.status.toUpperCase()}</span></span>
+          </div>
+          <div class="sale-detail-row">
+            <span class="sale-detail-label">Subtotal:</span>
+            <span class="sale-detail-value">₵${parseFloat(sale.total_amount).toFixed(2)}</span>
+          </div>
+          <div class="sale-detail-row">
+            <span class="sale-detail-label">Discount:</span>
+            <span class="sale-detail-value">-₵${parseFloat(sale.discount_amount).toFixed(2)}</span>
+          </div>
+          <div class="sale-detail-row">
+            <span class="sale-detail-label">Tax:</span>
+            <span class="sale-detail-value">₵${parseFloat(sale.tax_amount).toFixed(2)}</span>
+          </div>
+          <div class="sale-detail-row" style="padding-top: 1rem; border-top: 2px solid #e2e8f0;">
+            <span class="sale-detail-label"><strong>Total:</strong></span>
+            <span class="sale-detail-value"><strong>₵${parseFloat(sale.final_amount).toFixed(2)}</strong></span>
+          </div>
+        `;
+
+        if (sale.notes) {
+          detailsHtml += `
+            <div class="sale-detail-row">
+              <span class="sale-detail-label">Notes:</span>
+              <span class="sale-detail-value">${escapeHtml(sale.notes)}</span>
+            </div>
+          `;
+        }
+
+        document.getElementById('saleDetailsBody').innerHTML = detailsHtml;
+        openModal('saleModal');
+      } catch (error) {
+        showAlert('Error loading sale details: ' + error.message, 'error');
+      }
+    }
+
+    function logout() {
+      api.clearToken();
+      localStorage.removeItem('user');
+      window.location.href = '/frontend/pages/login.html';
+    }
+
+    function showAlert(message, type = 'success') {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      container.appendChild(alert);
+
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transition = 'opacity 0.3s';
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('overlay');
+      if (sidebar) {
+        sidebar.classList.toggle('active');
+      }
+      if (overlay) {
+        overlay.classList.toggle('active');
+      }
+    }
+  </script>
+</body>
+</html>

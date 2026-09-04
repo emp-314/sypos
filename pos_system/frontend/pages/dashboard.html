@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS System - Dashboard</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <style>
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+      background: #f1f5f9;
+    }
+
+    .sidebar {
+      background: white;
+      border-right: 1px solid #e2e8f0;
+      overflow-y: auto;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .sidebar-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2563eb;
+      margin: 0;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 1rem 0;
+    }
+
+    .sidebar-menu li {
+      margin: 0;
+    }
+
+    .sidebar-menu a {
+      display: block;
+      padding: 0.875rem 1.5rem;
+      color: #64748b;
+      text-decoration: none;
+      transition: all 0.3s;
+      border-left: 3px solid transparent;
+      font-weight: 500;
+    }
+
+    .sidebar-menu a:hover {
+      background: #f1f5f9;
+      color: #2563eb;
+    }
+
+    .sidebar-menu a.active {
+      background: #dbeafe;
+      color: #2563eb;
+      border-left-color: #2563eb;
+    }
+
+    .top-bar {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .user-menu {
+      position: relative;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      transition: background 0.3s;
+    }
+
+    .user-info:hover {
+      background: #f1f5f9;
+    }
+
+    .user-info-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .user-role {
+      font-size: 0.75rem;
+      color: #64748b;
+      font-weight: 400;
+      margin-top: 0.25rem;
+      text-transform: capitalize;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #2563eb;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      min-width: 200px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: none;
+      margin-top: 0.5rem;
+    }
+
+    .dropdown-menu.active {
+      display: block;
+    }
+
+    .dropdown-menu a, .dropdown-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #1e293b;
+      transition: background 0.3s;
+      font-family: inherit;
+    }
+
+    .dropdown-menu a:hover, .dropdown-menu button:hover {
+      background: #f1f5f9;
+    }
+
+    .content {
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-label {
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2563eb;
+    }
+
+    .stat-card.success .stat-value { color: #10b981; }
+    .stat-card.warning .stat-value { color: #f59e0b; }
+    .stat-card.danger .stat-value { color: #ef4444; }
+
+    /* Mobile menu toggle */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      color: var(--text);
+    }
+
+    .menu-toggle:hover {
+      color: var(--primary);
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        height: 100vh;
+        z-index: 999;
+        width: 250px;
+        background: white;
+        transition: left 0.3s;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+      <div class="sidebar-header">
+        <h3 class="sidebar-logo">🏪 POS</h3>
+      </div>
+      <nav>
+        <ul class="sidebar-menu">
+          <li><a href="dashboard.html" class="nav-link" data-page="dashboard" data-roles="admin,manager">📊 Dashboard</a></li>
+          <li><a href="pos.html" class="nav-link" data-page="pos" data-roles="cashier,manager,admin">🛒 POS</a></li>
+          <li><a href="products.html" class="nav-link" data-page="products" data-roles="admin,manager">📦 Products</a></li>
+          <li><a href="customers.html" class="nav-link" data-page="customers" data-roles="admin,manager">👥 Customers</a></li>
+          <li><a href="sales.html" class="nav-link" data-page="sales" data-roles="admin,manager">📋 Sales</a></li>
+          <li><a href="reports.html" class="nav-link" data-page="reports" data-roles="admin,manager">📈 Reports</a></li>
+          <li><a href="users.html" class="nav-link" data-page="users" data-roles="admin">👤 Users</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        <div class="user-menu">
+          <div class="user-info" onclick="toggleUserMenu()">
+            <div class="user-avatar" id="userInitial">A</div>
+            <div class="user-info-content">
+              <span id="username">Admin</span>
+              <span class="user-role" id="userRole">Admin</span>
+            </div>
+          </div>
+          <div class="dropdown-menu" id="userDropdown">
+            <a href="profile.html">👤 Profile</a>
+            <a href="#" onclick="changePassword()">🔒 Change Password</a>
+            <button onclick="logout()">🚪 Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="content" id="pageContent">
+        <div class="stats-grid">
+          <div class="stat-card success">
+            <div class="stat-label">Today's Sales</div>
+            <div class="stat-value" id="todaySales">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Today's Revenue</div>
+            <div class="stat-value" id="todayRevenue">GH₵0</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-label">This Month</div>
+            <div class="stat-value" id="monthSales">0</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-label">Low Stock Items</div>
+            <div class="stat-value" id="lowStockCount">0</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-title">Recent Sales</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Sale ID</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody id="recentSalesTable">
+                <tr>
+                  <td colspan="4" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Top Products</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Sold</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="topProductsTable">
+                <tr>
+                  <td colspan="3" class="text-center">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal" id="changePasswordModal">
+    <div class="modal-content p-4">
+      <h2>Change Password</h2>
+      <form id="changePasswordForm" class="mt-4">
+        <div class="form-group">
+          <label for="oldPassword">Current Password</label>
+          <input type="password" id="oldPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" required>
+        </div>
+        <div class="flex gap-2 justify-between">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('changePasswordModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Require authentication
+    requireAuth();
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = getCurrentUser();
+      if (user) {
+        // Redirect cashier to POS page
+        if (user.role === 'cashier') {
+          window.location.href = 'pos.html';
+          return;
+        }
+
+        document.getElementById('username').textContent = user.username;
+        document.getElementById('userInitial').textContent = user.username.charAt(0).toUpperCase();
+        
+        // Display user role
+        const roleDisplay = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User';
+        document.getElementById('userRole').textContent = roleDisplay;
+
+        // Filter menu items based on role
+        filterMenuByRole(user.role);
+      }
+
+      // Set active nav link
+      const currentPage = 'dashboard';
+      document.querySelectorAll('.nav-link').forEach(link => {
+        if (link.dataset.page === currentPage) {
+          link.classList.add('active');
+        }
+      });
+
+      // Load dashboard data
+      await loadDashboardData();
+    });
+
+    function filterMenuByRole(userRole) {
+      const navLinks = document.querySelectorAll('.nav-link');
+      navLinks.forEach(link => {
+        const allowedRoles = link.dataset.roles ? link.dataset.roles.split(',') : [];
+        if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+          // Hide the menu item by removing it or hiding its parent
+          link.parentElement.style.display = 'none';
+        } else {
+          link.parentElement.style.display = 'block';
+        }
+      });
+    }
+
+    async function loadDashboardData() {
+      try {
+        const summary = await api.getSalesSummary();
+        document.getElementById('todaySales').textContent = summary.today.sales || 0;
+        document.getElementById('todayRevenue').textContent = formatCurrency(summary.today.revenue || 0);
+        document.getElementById('monthSales').textContent = summary.thisMonth.sales || 0;
+
+        // Get low stock count
+        const lowStock = await api.getLowStockProducts();
+        document.getElementById('lowStockCount').textContent = lowStock.data.length || 0;
+
+        // Get recent sales
+        const sales = await api.getAllSales(5);
+        const recentTable = document.getElementById('recentSalesTable');
+        if (sales.data.length === 0) {
+          recentTable.innerHTML = '<tr><td colspan="4" class="text-center">No sales yet</td></tr>';
+        } else {
+          recentTable.innerHTML = sales.data.map(sale => `
+            <tr>
+              <td>#${sale.sale_id}</td>
+              <td>${sale.customer_name || 'Walk-in'}</td>
+              <td>${formatCurrency(sale.final_amount)}</td>
+              <td>${formatDateTime(sale.sale_date)}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Get top products
+        const today = new Date().toISOString().split('T')[0];
+        const topProducts = await api.getTopProducts(today, today);
+        const topTable = document.getElementById('topProductsTable');
+        if (topProducts.data.length === 0) {
+          topTable.innerHTML = '<tr><td colspan="3" class="text-center">No sales today</td></tr>';
+        } else {
+          topTable.innerHTML = topProducts.data.slice(0, 5).map(product => `
+            <tr>
+              <td>${product.name}</td>
+              <td>${product.quantity_sold}</td>
+              <td>${formatCurrency(product.total_revenue)}</td>
+            </tr>
+          `).join('');
+        }
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      }
+    }
+
+    function toggleUserMenu() {
+      document.getElementById('userDropdown').classList.toggle('active');
+    }
+
+    function logout() {
+      api.clearToken();
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    }
+
+    function changePassword() {
+      openModal('changePasswordModal');
+      closeModal('userDropdown');
+    }
+
+    document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const oldPassword = document.getElementById('oldPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (newPassword !== confirmPassword) {
+        showAlert('Passwords do not match', 'error');
+        return;
+      }
+
+      try {
+        await api.changePassword(oldPassword, newPassword);
+        showAlert('Password changed successfully', 'success');
+        closeModal('changePasswordModal');
+        document.getElementById('changePasswordForm').reset();
+      } catch (error) {
+        showAlert(error.message, 'error');
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.user-menu')) {
+        document.getElementById('userDropdown').classList.remove('active');
+      }
+    });
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('overlay');
+      if (sidebar) {
+        sidebar.classList.toggle('active');
+      }
+      if (overlay) {
+        overlay.classList.toggle('active');
+      }
+    }
+  </script>
+</body>
+</html>

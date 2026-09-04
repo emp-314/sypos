@@ -1,0 +1,32 @@
+# Database (point these at your hosted MySQL instance for production)
+DB_HOST=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+DB_PORT=3306
+
+# Local dev only - Vercel provides its own PORT
+PORT=5000
+
+# Auth
+JWT_SECRET=
+
+NODE_ENV=production
+
+# Currency display
+CURRENCY_CODE=
+CURRENCY_SYMBOL=
+CURRENCY_NAME=
+
+# Paystack
+LIVE_SECRET_KEY=
+LIVE_PUBLIC_KEY=
+PAYSTACK_PUBLIC_KEY=
+PAYSTACK_SECRET_KEY=
+PAYSTACK_CURRENCY=
+
+# Cloudinary (product image uploads - required for Vercel since local disk
+# storage doesn't persist on serverless functions)
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=

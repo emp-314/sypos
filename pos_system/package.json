@@ -1,0 +1,21 @@
+{
+  "name": "pos_system",
+  "version": "1.0.0",
+  "description": "Point of Sale System - Vercel deployment root",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.13.6",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.0",
+    "jwt-simple": "^0.5.6",
+    "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "mysql2": "^3.6.0",
+    "serverless-http": "^3.2.0"
+  }
+}

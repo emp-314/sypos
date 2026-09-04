@@ -1,0 +1,6 @@
+backend/node_modules
+backend/uploads
+backend/.env
+.env
+*.env.local
+tmpclaude-*-cwd
